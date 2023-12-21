@@ -1,23 +1,47 @@
-import logo from './logo.svg';
 import './App.css';
+import List from './components/List';
+import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import { api } from './api/apiResource';
+import { useEffect, useState } from 'react';
+import uuid from "react-uuid"
 
 function App() {
+
+  const [tasks, setTasks] = useState([])
+
+  const UsingEffect = async() =>{
+    const res = await api.get("/todolist")
+
+    setTasks(res.data)
+  }
+
+  useEffect(()=> {
+    UsingEffect();
+}, [tasks] )
+
+const submitted = async(usertasks) =>{
+  const respon = {
+    "id": uuid(),
+    "task": usertasks,
+    "complete": false
+};
+
+await api.post("todolist", respon);
+
+}
+
+const deleteTask = async(task_id) =>{
+  await api.delete(`/todolist/${task_id}`)
+}
+
+const checkTask = async(task_id, complete) =>{
+  await api.patch(`/todolist/${task_id}`,{complete})
+}
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='container'>
+    
+      <List tasks={tasks} submitted={submitted} deleteTask={deleteTask} checkTask={checkTask}/>
     </div>
   );
 }
